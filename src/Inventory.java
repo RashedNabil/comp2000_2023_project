@@ -1,10 +1,12 @@
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Inventory {
     protected ArrayList<ItemInterface> stock;
-
+    private static final int ITEM_NOT_FOUND = -1;
     public Inventory() {
         stock = new ArrayList<>();
+        
     }
 
     public Inventory(ArrayList<ItemInterface> startingStock) {
@@ -18,9 +20,7 @@ public class Inventory {
      */
     public Inventory(Inventory copy) {
         stock = new ArrayList<>(copy.stock.size());
-        for (ItemInterface item : copy.stock) {
-            stock.add(item);
-        }
+        
     }
 
     public ArrayList<ItemInterface> getStock() {
@@ -41,13 +41,13 @@ public class Inventory {
      * @param itemName
      * @return An Item matching the `itemName`
      */
-    public ItemInterface removeOne(String itemName) {   
+    public Optional<ItemInterface> removeOne(String itemName) {   
         int removeFromIdx = indexOfItemByName(itemName);
-        if (removeFromIdx == -1) {
-            return null;
+        if (removeFromIdx == ITEM_NOT_FOUND) {
+            return Optional.empty();
         }
 
-        return stock.remove((int) removeFromIdx);
+        return Optional.ofNullable(stock.remove(removeFromIdx));
     }
 
     /**
@@ -62,7 +62,7 @@ public class Inventory {
                 return i;
             }
         }
-        return -1;
+        return ITEM_NOT_FOUND;
     }
 
 }
