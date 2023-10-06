@@ -1,14 +1,36 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
 
 public class Inventory {
     private ArrayList<ItemInterface> stock;
     private String searchBy;
-
+    private List<InventoryObserver> observers = new ArrayList<>();
+   
     public Inventory() {
         stock = new ArrayList<>();
         searchBy = "All";
     }
+    public interface InventoryObserver {
+        void inventoryUpdated(Inventory inventory);
+    }
+        
+    public void addObserver(InventoryObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(InventoryObserver observer) {
+        observers.remove(observer);
+    }
+    
+
+    private void notifyObservers() {
+        for (InventoryObserver observer : observers) {
+            observer.inventoryUpdated(this);
+        }
+    }
+    
 
     public Inventory(ArrayList<ItemInterface> startingStock) {
         stock = startingStock;
@@ -32,7 +54,7 @@ public class Inventory {
         return stock.remove((int) removeFromIdx.get());
     }
 
-    public ItemInterface remove(ItemInterface item) throws ItemNotAvailableException {
+    public ItemInterface removeOne(ItemInterface item) throws ItemNotAvailableException {
         // Check if the provided item exists in the players inventory
         Optional<Integer> removeFromIdx = Optional.empty();
         for (int i = 0; i < stock.size(); i++) {
@@ -52,9 +74,27 @@ public class Inventory {
      * Sort is called using the current/existing sort strategy.
      * @param item - actual instance
      */
-    public void addOne(ItemInterface item) {
+    
+     public void addOne(ItemInterface item) {
         stock.add(item);
-    }
+        notifyObservers();}
+        
+        public ItemInterface remove(ItemInterface item) throws ItemNotAvailableException {
+            Optional<Integer> removeFromIdx = Optional.empty();
+            for (int i = 0; i < stock.size(); i++) {
+                if (stock.get(i) == item) {
+                    removeFromIdx = Optional.of(i);
+                    break;
+                }
+            }
+            if (removeFromIdx.isEmpty()) {
+                throw new ItemNotAvailableException(item.getDefinition());
+            }
+            return stock.remove(removeFromIdx.get().intValue());
+        }
+        
+    
+    
 
     /**
      * Search for `item` in the inventory stock.
@@ -132,5 +172,9 @@ public class Inventory {
             str += item.toString() + "\n\n";
         }
         return str;
+    }
+
+    public String getSize() {
+        return null;
     }
 }
